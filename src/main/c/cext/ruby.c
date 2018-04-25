@@ -129,10 +129,6 @@ void rb_check_safe_obj(VALUE object) {
   }
 }
 
-bool SYMBOL_P(VALUE value) {
-  return polyglot_as_boolean(polyglot_invoke(RUBY_CEXT, "SYMBOL_P", value));
-}
-
 VALUE rb_obj_hide(VALUE obj) {
   // In MRI, this deletes the class information which is later set by rb_obj_reveal.
   // It also hides the object from each_object, we do not hide it.
@@ -518,14 +514,6 @@ short rb_fix2short(VALUE value) {
   rb_tr_error("rb_num2ushort not implemented");
 }
 
-VALUE INT2FIX(long value) {
-  return (VALUE) polyglot_invoke(RUBY_CEXT, "INT2FIX", value);
-}
-
-VALUE LONG2FIX(long value) {
-  return (VALUE) polyglot_invoke(RUBY_CEXT, "LONG2FIX", value);
-}
-
 long rb_fix2int(VALUE value) {
   return polyglot_as_i32(polyglot_invoke(RUBY_CEXT, "rb_fix2int", value));
 }
@@ -536,14 +524,6 @@ unsigned long rb_fix2uint(VALUE value) {
 
 int rb_long2int(long value) {
   return polyglot_as_i64(polyglot_invoke(RUBY_CEXT, "rb_long2int", value));
-}
-
-ID SYM2ID(VALUE value) {
-  return (ID) value;
-}
-
-VALUE ID2SYM(ID value) {
-  return (VALUE) value;
 }
 
 int rb_cmpint(VALUE val, VALUE a, VALUE b) {
@@ -4684,11 +4664,11 @@ int rb_reg_region_copy(struct re_registers *to, const struct re_registers *from)
 }
 
 ID rb_sym2id(VALUE sym) {
-  rb_tr_error("rb_sym2id not implemented");
+  return (ID) sym;
 }
 
 VALUE rb_id2sym(ID x) {
-  rb_tr_error("rb_id2sym not implemented");
+  return (VALUE) x;
 }
 
 VALUE rb_get_path_no_checksafe(VALUE obj) {

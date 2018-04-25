@@ -248,8 +248,20 @@ typedef char ruby_check_sizeof_voidp[SIZEOF_VOIDP == sizeof(void*) ? 1 : -1];
 #define FIXNUM_MAX RUBY_FIXNUM_MAX
 #define FIXNUM_MIN RUBY_FIXNUM_MIN
 
-VALUE INT2FIX(long value);
-VALUE LONG2FIX(long value);
+static inline VALUE
+int2fix_inline(long v)
+{
+    return (VALUE) polyglot_invoke(RUBY_CEXT, "INT2FIX", v);
+}
+#define INT2FIX(i) int2fix_inline(i)
+
+static inline VALUE
+long2fix_inline(long v)
+{
+    return (VALUE) polyglot_invoke(RUBY_CEXT, "LONG2FIX", v);
+}
+#define LONG2FIX(i) long2fix_inline(i)
+
 #define rb_fix_new(v) INT2FIX(v)
 VALUE rb_int2inum(SIGNED_VALUE);
 
@@ -375,18 +387,25 @@ int RB_FIXNUM_P(VALUE value);
 #define RB_IMMEDIATE_P(x) ((VALUE)(x) & RUBY_IMMEDIATE_MASK)
 #define IMMEDIATE_P(x) RB_IMMEDIATE_P(x)
 
+static inline VALUE
+rb_symbol_p_inline(VALUE v)
+{
+    return polyglot_as_boolean(polyglot_invoke(RUBY_CEXT, "SYMBOL_P", v));
+}
+
 ID rb_sym2id(VALUE);
 VALUE rb_id2sym(ID);
 #define RB_STATIC_SYM_P(x) (((VALUE)(x)&~((~(VALUE)0)<<RUBY_SPECIAL_SHIFT)) == RUBY_SYMBOL_FLAG)
 #define RB_DYNAMIC_SYM_P(x) (!RB_SPECIAL_CONST_P(x) && RB_BUILTIN_TYPE(x) == (RUBY_T_SYMBOL))
-#define RB_SYMBOL_P(x) (RB_STATIC_SYM_P(x)||RB_DYNAMIC_SYM_P(x))
+#define RB_SYMBOL_P(x) rb_symbol_p_inline(x)
 #define RB_ID2SYM(x) (rb_id2sym(x))
 #define RB_SYM2ID(x) (rb_sym2id(x))
 #define STATIC_SYM_P(x) RB_STATIC_SYM_P(x)
 #define DYNAMIC_SYM_P(x) RB_DYNAMIC_SYM_P(x)
-bool SYMBOL_P(VALUE value);
-VALUE ID2SYM(ID value);
-ID SYM2ID(VALUE value);
+#define SYMBOL_P(x) RB_SYMBOL_P(x)
+#define ID2SYM(x) RB_ID2SYM(x)
+#define SYM2ID(x) RB_SYM2ID(x)
+
 
 #ifndef USE_FLONUM
 #if SIZEOF_VALUE >= SIZEOF_DOUBLE

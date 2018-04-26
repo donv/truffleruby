@@ -114,12 +114,25 @@ class Preprocessor
     contents
   end
 
-  if __FILE__ == $0
-    puts "#line 1 \"#{ARGF.filename}\""
+  require 'stringio'
 
-    contents = patch(ARGF.filename, File.read(ARGF.filename), Dir.pwd)
+  if __FILE__ == $0
+    out = StringIO.new
+
+    original = File.read(ARGF.filename)
+    contents = patch(ARGF.filename, original.clone, Dir.pwd)
     contents.each_line do |line|
-      puts preprocess(line)
+      out.puts preprocess(line)
+    end
+
+    out.rewind
+    output = out.read
+    $stdout.print "#line 1 \"#{ARGF.filename}\"\n" + output
+
+    if ENV['PREPROCESS_DEBUG'] && original != output
+      patched_file_name = '.' + ARGF.filename.gsub(/\.c$/, '.patched.c')
+      File.write patched_file_name, output
+      $stderr.print `git diff --no-index --color -- #{ARGF.filename} #{patched_file_name}`
     end
   end
 end
